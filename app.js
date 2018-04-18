@@ -32,10 +32,8 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
-//挂载中间件
+//使用中间件
 app.use(logger('dev'));//使用日志中间件
 app.use(bodyParser.json());//加载解析json的中间件。
 app.use(bodyParser.urlencoded({ extended: false }));//加载解析urlencoded请求体的中间件。
@@ -52,17 +50,14 @@ app.use('/', routes);
 app.use('/users', users);
 
 
-// catch 404 and forward to error handler
+// 404
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
+//dev error
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
@@ -73,8 +68,7 @@ if (app.get('env') === 'development') {
     });
 }
 
-// production error handler
-// no stacktraces leaked to user
+// pro  error
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {

@@ -16,7 +16,7 @@ router.get('/', function(req, res, next) {
             console.log(err);
         }
         var data = rows;
-        // use index.ejs
+        // 使用index.ejs
         res.render('index', { title: 'Account Information', data: data, user: user });
     });
 });
