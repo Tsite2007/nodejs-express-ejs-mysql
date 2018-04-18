@@ -69,4 +69,170 @@ app对象主要有以下四种使用方法：
 
 `ps：__express无需关心，就是ejs模块的一个公共属性，表示要渲染的文件扩展名。`
 
-####fdsfdsfdsfdsfdsfds
+
+---
+
+# ejs教程
+
+### 一、cli
+我们开始的时候使用	`express -e xxx`  命令生成express使用ejs的cli
+
+真正调用ejs模板是用下面的语句：
+```
+// 设置模板路径和模板引擎
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+```
+
+### 二、使用
+```
+//  routes/index.js
+
+router.get('/add', function(req, res, next) {
+    res.render('userAdd', { title: 'Add User', msg: '' });
+});
+```
+通过res.render()渲染模板，并将页面直接返回给客户端
+
+第一个参数：模板名称 （后缀可选）
+
+第二个参数：给模板引擎的数据对象
+
+Tip：
+
+
+```
+//index.ejs
+
+<link rel='stylesheet' href='/stylesheets/style.css' />
+```
+这里的样式引用需要使用express内置的中间件static设置静态资源路径
+```
+//app.js
+
+app.use(express.static(path.join(__dirname, 'public'))); //static：设置静态资源的路径；缺少会导致静态资源无法访问
+```
+
+
+
+
+### 三、API
+##### 1. ejs标签：
+- <% code %>： JavaScript 代码
+- <%= code %>：输出数据到模板（输出是转义 HTML 标签）
+- <%- code %>：输出非转义的数据到模板
+- <%# code %>：注释标签，不执行、不输出内容
+
+##### 2. 包含include
+"./views/a.ejs" 和 "./views/user/b.ejs" 两个模板文件，使用 <%- include('a/b'); %> 代码包含后者。<%- 是为了避免对html进行转义。
+##### 3. 自定义分隔符
+之前可以自定义两侧的<>现在不支持了，只能替换%
+
+---
+
+# mysql教程
+### 一、安装
+在官网下载mysql安装包，傻瓜式安装并在最后设置好root及密码，软件本身自带client工具，但是不支持汉化，可以自行寻找可视化工具（我本机使用的是HeidSQL）。
+### 二、mysql标准语法
+
+1. 查：
+
+```
+SELECT field1, field2,...fieldN FROM table_name1, table_name2...
+[WHERE condition1 [AND [OR]] condition2.....
+```
+- 查询语句中你可以使用一个或者多个表，表之间使用逗号, 分割，并使用WHERE语句来设定查询条件。
+- 你可以在 WHERE 子句中指定任何条件。
+- 你可以使用 AND 或者 OR 指定一个或多个条件。
+- WHERE 子句也可以运用于 SQL 的 DELETE 或者 UPDATE 命令。
+- WHERE 子句类似于程序语言中的 if 条件，根据 MySQL 表中的字段值来读取指定的数据。
+
+2. 改：
+
+```
+UPDATE table_name SET field1=new-value1, field2=new-value2
+[WHERE Clause]
+```
+- 如果没有指定 WHERE 子句，MySQL 表中的所有记录将被删除。
+- 你可以在 WHERE 子句中指定任何条件
+- 您可以在单个表中一次性删除记录。
+
+3. 删：
+
+```
+DELETE FROM table_name [WHERE Clause]
+```
+- 查询语句中你可以使用一个或者多个表，表之间使用逗号, 分割，并使用WHERE语句来设定查询条件。
+- 你可以在 WHERE 子句中指定任何条件。
+- 你可以使用 AND 或者 OR 指定一个或多个条件。
+- WHERE 子句也可以运用于 SQL 的 DELETE 或者 UPDATE 命令。
+- WHERE 子句类似于程序语言中的 if 条件，根据 MySQL 表中的字段值来读取指定的数据。
+
+4. 增：
+
+```
+INSERT INTO table_name ( field1, field2,...fieldN )
+                       VALUES
+                       ( value1, value2,...valueN );
+```
+如果数据是字符型，必须使用单引号或者双引号，如："value"。
+
+### 三、在node中使用mysql
+1.安装依赖
+
+`npm install mysql --save`
+
+2.使用
+
+- 在app.js中，配置options并连接
+```
+//  app.js
+var mysql = require("mysql");
+//db配置
+var con = mysql.createConnection({
+    host: "localhost", //主机 默认为localhost
+    user: "root",
+    password: "root",
+    database: "node" //数据库名
+});
+//连接（成功与否在控制台输出信息）
+con.connect(function(err) {
+    if (err) {
+        console.log('connecting error');
+        return;
+    }
+    console.log('connecting success');
+});
+```
+- 以查询为例，在路由文件中使用db.query()方法对数据库进行操作，数据库语句为sql标准语法
+
+
+```
+//  routes/index.js
+router.get('/', function(req, res, next) {
+
+    var db = req.con;
+    var data = "";
+    var user = req.query.user;
+    var filter = "";
+    if (user) {
+        filter = 'WHERE userid = ?';
+    }
+    db.query('SELECT * FROM test ' + filter, user, function(err, rows) {
+        if (err) {
+            console.log(err);
+        }
+        var data = rows;
+        // use index.ejs
+        res.render('index', { title: 'Account Information', data: data, user: user });
+    });
+});
+```
+```
+//db并不在request里面，之所以能取到是我在app.js中使用中间件挂载到了request上
+// db state
+app.use(function(req, res, next) {
+    req.con = con;
+    next();
+});
+```
